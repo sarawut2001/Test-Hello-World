@@ -1,26 +1,83 @@
-pipeline{
+pipeline {
     agent any
-    tools {
-        nodejs "Node"
-    }
-    stages {
-        stage('clone'){
 
+    environment {
+        DOCKER_IMAGE = 'ci-cd-nodejs-hello-world'
+        DOCKER_TAG = 'latest'
+        GITHUB_REPO = 'https://github.com/sarawut2001/Test-Hello-World.git'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                cleanWs()
+                git branch: 'main', url: "${env.GITHUB_REPO}"
+            }
+        }
+
+        stage('Build') {
+            steps {
+                script {
+                    docker.image('node:22').inside {
+                        sh 'npm install'
+                        sh 'npm run build'
+                    }
+                }
+            }
+        }
+
+        stage('Test') {
+            steps {
+                script {
+                    docker.image('node:22').inside {
+                        sh 'npm test'
+                    }
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    docker.build("${env.DOCKER_IMAGE}:${env.DOCKER_TAG}", "-f Dockerfile .")
+                }
+            }
+        }
+
+        stage('Push to Registry') {
+            steps {
+                script {
+                    withCredentials([string(credentialsId: 'docker-hub-credentials', variable: 'DOCKER_HUB_TOKEN')]) {
+                        docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
+                            docker.image("${env.DOCKER_IMAGE}:${env.DOCKER_TAG}").push()
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sh '''
+                    echo "Deploying application..."
+                    docker stop ${DOCKER_IMAGE} || true
+                    docker rm ${DOCKER_IMAGE} || true
+                    docker run -d --name ${DOCKER_IMAGE} -p 3000:3000 ${DOCKER_IMAGE}:${DOCKER_TAG}
+                '''
+            }
         }
     }
-    stages {
-        stage('build'){
 
+    post {
+        always {
+            sh 'docker system prune -f'
+            cleanWs()
         }
-    }
-    stages {
-        stage('test'){
-
+        success {
+            echo '✅ Pipeline สำเร็จ!'
         }
-    }
-    stages {
-        stage('deploy'){
-            
+        failure {
+            echo '❌ Pipeline ล้มเหลว! ตรวจสอบล็อกเพื่อดูรายละเอียด'
         }
     }
 }
