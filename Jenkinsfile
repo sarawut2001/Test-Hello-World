@@ -5,9 +5,7 @@ pipeline {
         DOCKER_IMAGE = 'ci-cd-nodejs-hello-world'
         DOCKER_TAG = 'latest'
         GITHUB_REPO = 'https://github.com/sarawut2001/Test-Hello-World.git'
-        IMAGE_NAME = "ci-cd-nodejs-hello-world"
-        IMAGE_TAG = "latest"
-        DOCKER_REPO = "docker-hub-credentials"
+        DOCKER_USERNAME = 'sarawut2001'
     }
 
     stages {
@@ -50,11 +48,11 @@ pipeline {
         stage('Push to Registry') {
             steps {
                 withCredentials([string(credentialsId: 'docker-hub-token', variable: 'DOCKER_TOKEN')]) {
-                    sh """
-                        echo "$DOCKER_TOKEN" | docker login -u sarawut2001 --password-stdin
-                        docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${DOCKER_REPO}:${IMAGE_TAG}
-                        docker push ${DOCKER_REPO}:${IMAGE_TAG}
-                    """
+                    sh '''
+                        echo $DOCKER_TOKEN | docker login -u $DOCKER_USERNAME --password-stdin
+                        docker tag $DOCKER_IMAGE:$DOCKER_TAG $DOCKER_USERNAME/$DOCKER_IMAGE:$DOCKER_TAG
+                        docker push $DOCKER_USERNAME/$DOCKER_IMAGE:$DOCKER_TAG
+                    '''
                 }
             }
         }
@@ -63,9 +61,11 @@ pipeline {
             steps {
                 sh '''
                     echo "Deploying application..."
-                    docker stop ${DOCKER_IMAGE} || true
-                    docker rm ${DOCKER_IMAGE} || true
-                    docker run -d --name ${DOCKER_IMAGE} -p 3000:3000 ${DOCKER_IMAGE}:${DOCKER_TAG}
+                    docker stop $DOCKER_IMAGE || true
+                    docker rm $DOCKER_IMAGE || true
+                    docker run -d --name $DOCKER_IMAGE \
+                        -p 3000:3000 \
+                        $DOCKER_USERNAME/$DOCKER_IMAGE:$DOCKER_TAG
                 '''
             }
         }
