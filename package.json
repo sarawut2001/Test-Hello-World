@@ -9,11 +9,15 @@
     "mocha": "^11.1.0",
     "supertest": "^7.0.0"
   },
+  
   "scripts": {
     "test": "mocha --exit ./test",
-    "start": "node main.js"
+    "start": "node main.js",
+    "build": "node build.js"
   },
   "author": "",
   "license": "ISC",
   "description": ""
+
+  
 }
