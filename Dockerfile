@@ -10,4 +10,4 @@ COPY . .
 
 EXPOSE 8888
 
-CMD ["start": "node server.js"]
+CMD ["npm", "start"]
