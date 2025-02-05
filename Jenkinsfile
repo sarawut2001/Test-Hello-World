@@ -65,7 +65,7 @@ pipeline {
                     docker rm $DOCKER_IMAGE || true
                     docker run -d --name $DOCKER_IMAGE \
                         -p 3000:3000 \
-                        $DOCKER_USERNAME/$DOCKER_IMAGE:$DOCKER_TAG
+                        $DOCKER_USERNAME/$DOCKER_IMAGE:$DOCKER_TAG npm start
                 '''
             }
         }
