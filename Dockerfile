@@ -10,4 +10,4 @@ COPY . .
 
 EXPOSE 8888
 
-CMD ["start": "node main.js"]
+CMD ["start": "node server.js"]
