@@ -2,16 +2,16 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "ci-cd-nodejs-hello-world"
-        IMAGE_TAG  = "latest"
-        DOCKER_REPO = "sarawut2001/${IMAGE_NAME}"
+        DOCKER_IMAGE = 'ci-cd-nodejs-hello-world'
+        DOCKER_TAG = 'latest'
+        GITHUB_REPO = 'https://github.com/sarawut2001/Test-Hello-World.git'
     }
 
     stages {
         stage('Checkout') {
             steps {
                 cleanWs()
-                git 'https://github.com/sarawut2001/Test-Hello-World.git'
+                git branch: 'main', url: "${env.GITHUB_REPO}"
             }
         }
 
@@ -38,7 +38,9 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} -f Dockerfile ."
+                script {
+                    docker.build("${env.DOCKER_IMAGE}:${env.DOCKER_TAG}", "-f Dockerfile .")
+                }
             }
         }
 
