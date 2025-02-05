@@ -5,6 +5,7 @@ pipeline {
         DOCKER_IMAGE = 'ci-cd-nodejs-hello-world'
         DOCKER_TAG = 'latest'
         GITHUB_REPO = 'https://github.com/sarawut2001/Test-Hello-World.git'
+        IMAGE_NAME = "ci-cd-nodejs-hello-world"
     }
 
     stages {
