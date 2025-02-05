@@ -7,6 +7,7 @@ pipeline {
         GITHUB_REPO = 'https://github.com/sarawut2001/Test-Hello-World.git'
         IMAGE_NAME = "ci-cd-nodejs-hello-world"
         IMAGE_TAG = "latest"
+        DOCKER_REPO = "docker-hub-credentials"
     }
 
     stages {
