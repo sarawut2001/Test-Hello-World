@@ -18,14 +18,12 @@ pipeline {
 
         stage('Build') {
             steps {
-                script {
-                    docker.image('node:22').inside {
-                        sh 'npm install'
-                        sh 'npm run build'
-                    }
-                }
-            }
-        }
+                sh '''
+                    docker run --rm -v $PWD:/app -w /app node:22 sh -c "npm install && npm run build"
+                '''
+    }
+}
+
 
         stage('Test') {
             steps {
@@ -40,7 +38,9 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
+
                     docker.build("${env.DOCKER_IMAGE}:${env.DOCKER_TAG}", "-f Dockerfile .")
+                    
                 }
             }
         }
