@@ -73,10 +73,7 @@ pipeline {
     }
 
     post {
-        always {
-            sh 'docker system prune -f'
-            cleanWs()
-        }
+        
         success {
             echo '✅ Pipeline สำเร็จ!'
         }
