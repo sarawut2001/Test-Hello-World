@@ -1,5 +1,10 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'node:22'
+            args '-v /var/run/docker.sock:/var/run/docker.sock'
+        }
+    }
 
     environment {
         DOCKER_IMAGE = 'ci-cd-nodejs-hello-world'
@@ -70,6 +75,15 @@ pipeline {
                 '''
             }
         }
+
+        stage('Verify Deployment') {
+            steps {
+                sh '''
+                    docker ps | grep $DOCKER_IMAGE
+                    curl http://localhost:3000
+                '''
+    }
+}
     }
 
     post {
