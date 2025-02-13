@@ -1,10 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'node:22'
-            args '-v /var/run/docker.sock:/var/run/docker.sock'
-        }
-    }
+    agent any
 
     environment {
         DOCKER_IMAGE = 'ci-cd-nodejs-hello-world'
@@ -22,30 +17,31 @@ pipeline {
         }
 
         stage('Build') {
+            agent {
+                docker { image 'node:22' }
+            }
             steps {
                 sh '''
-                    docker run --rm -v $PWD:/app -w /app node:22 sh -c "npm install && npm run build"
+                    npm install
+                    npm run build
                 '''
-    }
-}
+            }
+        }
 
 
         stage('Test') {
+            agent {
+                docker { image 'node:22' }
+            }
             steps {
-                script {
-                    docker.image('node:22').inside {
-                        sh 'npm test'
-                    }
-                }
+                sh 'npm test'
             }
         }
 
         stage('Build Docker Image') {
             steps {
                 script {
-
                     docker.build("${env.DOCKER_IMAGE}:${env.DOCKER_TAG}", "-f Dockerfile .")
-                    
                 }
             }
         }
@@ -64,15 +60,18 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                sh '''
-                    echo "Deploying application..."
-                    docker stop $DOCKER_IMAGE || true
-                    docker rm $DOCKER_IMAGE || true
-                    docker run -d --name $DOCKER_IMAGE \
-                        -p 3000:3000 \
-                        $DOCKER_USERNAME/$DOCKER_IMAGE:$DOCKER_TAG \
-                        sh -c "npm start"
-                '''
+                script {
+                    def containerExists = sh(script: "docker ps -a -q -f name=$DOCKER_IMAGE", returnStdout: true).trim()
+                    if (containerExists) {
+                        sh "docker stop $DOCKER_IMAGE && docker rm $DOCKER_IMAGE"
+                    }
+                    sh '''
+                        docker run -d --name $DOCKER_IMAGE \
+                            -p 3000:3000 \
+                            $DOCKER_USERNAME/$DOCKER_IMAGE:$DOCKER_TAG \
+                            sh -c "npm start"
+                    '''
+                }
             }
         }
 
@@ -80,14 +79,15 @@ pipeline {
             steps {
                 sh '''
                     docker ps | grep $DOCKER_IMAGE
-                    curl http://localhost:3000
+                    curl -f http://localhost:3000 || exit 1
                 '''
-    }
-}
+            }
+        }
     }
 
+
     post {
-        
+
         success {
             echo '✅ Pipeline สำเร็จ!'
         }
