@@ -16,19 +16,7 @@ pipeline {
             }
         }
 
-        stage('Build') {
-            agent {
-                docker { image 'node:22' }
-            }
-            steps {
-                sh '''
-                    npm install
-                    npm run build
-                '''
-            }
-        }
-
-
+    
         stage('Test') {
             agent {
                 docker { image 'node:22' }
