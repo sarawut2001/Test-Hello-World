@@ -29,7 +29,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    docker.build("${env.DOCKER_IMAGE}:${env.DOCKER_TAG}", "-f Dockerfile .")
+                    docker.build("${env.DOCKER_USERNAME}/${env.DOCKER_IMAGE}:${env.DOCKER_TAG}", "-f Dockerfile .")
                 }
             }
         }
@@ -39,7 +39,7 @@ pipeline {
                 withCredentials([string(credentialsId: 'docker-hub-token', variable: 'DOCKER_TOKEN')]) {
                     sh '''
                         echo $DOCKER_TOKEN | docker login -u $DOCKER_USERNAME --password-stdin
-                        docker tag $DOCKER_IMAGE:$DOCKER_TAG $DOCKER_USERNAME/$DOCKER_IMAGE:$DOCKER_TAG
+                        
                         docker push $DOCKER_USERNAME/$DOCKER_IMAGE:$DOCKER_TAG
                     '''
                 }
