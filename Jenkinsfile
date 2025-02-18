@@ -79,7 +79,7 @@ pipeline {
             steps {
                 sh '''
                     docker ps | grep $DOCKER_IMAGE
-                    curl -f http://localhost:3000 || exit 1
+                    curl -f http://localhost:8888 || exit 1
                 '''
             }
         }
