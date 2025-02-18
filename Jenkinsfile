@@ -67,7 +67,7 @@ pipeline {
                     }
                     sh '''
                         docker run -d --name $DOCKER_IMAGE \
-                            -p 3000:3000 \
+                            -p 8888:8888 \
                             $DOCKER_USERNAME/$DOCKER_IMAGE:$DOCKER_TAG \
                             sh -c "npm start"
                     '''
