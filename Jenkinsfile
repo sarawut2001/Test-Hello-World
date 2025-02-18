@@ -1,7 +1,5 @@
 pipeline {
-    agent {
-        docker { image 'docker:latest' }
-    }
+    agent any
 
     environment {
         DOCKER_IMAGE = 'ci-cd-nodejs-hello-world'
@@ -14,7 +12,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 cleanWs()
-                git branch: 'main', url: "%GITHUB_REPO%"
+                git branch: 'main', url: "${env.GITHUB_REPO}"
             }
         }
 
@@ -23,10 +21,10 @@ pipeline {
                 docker { image 'node:22' }
             }
             steps {
-                bat """
+                sh '''
                     npm install
                     npm run build
-                """
+                '''
             }
         }
 
@@ -36,14 +34,14 @@ pipeline {
                 docker { image 'node:22' }
             }
             steps {
-                bat "npm test"
+                sh 'npm test'
             }
         }
 
         stage('Build Docker Image') {
             steps {
                 script {
-                    docker.build("%DOCKER_IMAGE%:%DOCKER_TAG%", "-f Dockerfile .")
+                    docker.build("${env.DOCKER_IMAGE}:${env.DOCKER_TAG}", "-f Dockerfile .")
                 }
             }
         }
@@ -51,11 +49,11 @@ pipeline {
         stage('Push to Registry') {
             steps {
                 withCredentials([string(credentialsId: 'docker-hub-token', variable: 'DOCKER_TOKEN')]) {
-                    bat """
-                        echo %DOCKER_TOKEN% | docker login -u %DOCKER_USERNAME% --password-stdin
-                        docker tag %DOCKER_IMAGE%:%DOCKER_TAG% %DOCKER_USERNAME%/%DOCKER_IMAGE%:%DOCKER_TAG%
-                        docker push %DOCKER_USERNAME%/%DOCKER_IMAGE%:%DOCKER_TAG%
-                    """
+                    sh '''
+                        echo $DOCKER_TOKEN | docker login -u $DOCKER_USERNAME --password-stdin
+                        docker tag $DOCKER_IMAGE:$DOCKER_TAG $DOCKER_USERNAME/$DOCKER_IMAGE:$DOCKER_TAG
+                        docker push $DOCKER_USERNAME/$DOCKER_IMAGE:$DOCKER_TAG
+                    '''
                 }
             }
         }
@@ -63,26 +61,26 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    def containerExists = bat(script: "docker ps -a -q -f name=%DOCKER_IMAGE%", returnStdout: true).trim()
+                    def containerExists = sh(script: "docker ps -a -q -f name=$DOCKER_IMAGE", returnStdout: true).trim()
                     if (containerExists) {
-                        bat "docker stop %DOCKER_IMAGE% && docker rm %DOCKER_IMAGE%"
+                        sh "docker stop $DOCKER_IMAGE && docker rm $DOCKER_IMAGE"
                     }
-                    bat """
-                        docker run -d --name %DOCKER_IMAGE% ^
-                            -p 3000:3000 ^
-                            %DOCKER_USERNAME%/%DOCKER_IMAGE%:%DOCKER_TAG% ^
+                    sh '''
+                        docker run -d --name $DOCKER_IMAGE \
+                            -p 3000:3000 \
+                            $DOCKER_USERNAME/$DOCKER_IMAGE:$DOCKER_TAG \
                             sh -c "npm start"
-                    """
+                    '''
                 }
             }
         }
 
         stage('Verify Deployment') {
             steps {
-                bat """
-                    docker ps | findstr %DOCKER_IMAGE%
+                sh '''
+                    docker ps | grep $DOCKER_IMAGE
                     curl -f http://localhost:3000 || exit 1
-                """
+                '''
             }
         }
     }
@@ -98,3 +96,5 @@ pipeline {
         }
     }
 }
+
+
