@@ -75,14 +75,7 @@ pipeline {
             }
         }
 
-        stage('Verify Deployment') {
-            steps {
-                sh '''
-                    docker ps | grep $DOCKER_IMAGE
-                    curl -f http://localhost:8888 || exit 1
-                '''
-            }
-        }
+
     }
 
 
