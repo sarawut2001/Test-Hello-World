@@ -70,10 +70,10 @@ pipeline {
     post {
 
         success {
-            echo '✅ Pipeline สำเร็จ!'
+            echo '✅ Pipeline Successful!'
         }
         failure {
-            echo '❌ Pipeline ล้มเหลว! ตรวจสอบล็อกเพื่อดูรายละเอียด'
+            echo '❌ Pipeline Fail! Check the log for details.'
         }
     }
 }
