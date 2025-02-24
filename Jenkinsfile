@@ -6,23 +6,22 @@ pipeline {
         DOCKER_TAG = 'latest'
         GITHUB_REPO = 'https://github.com/sarawut2001/Test-Hello-World.git'
         DOCKER_USERNAME = 'sarawut2001'
+        KUBECONFIG = '/var/jenkins_home/.kube/config'  // Config Kubernetes (ต้อง mount ใน container)
     }
 
     stages {
         stage('Checkout') {
             steps {
                 cleanWs()
-                git branch: 'main', url: "${env.GITHUB_REPO}"
+                git branch: 'main', credentialsId: 'github-token', url: "${env.GITHUB_REPO}"
             }
         }
 
-    
         stage('Test') {
             agent {
                 docker { image 'node:22' }
             }
             steps {
-                sh 'npm install'
                 sh 'npm test'
             }
         }
@@ -37,36 +36,45 @@ pipeline {
 
         stage('Push to Registry') {
             steps {
-                withCredentials([string(credentialsId: 'docker-hub-token', variable: 'DOCKER_TOKEN')]) {
-                    sh '''
-                        echo $DOCKER_TOKEN | docker login -u $DOCKER_USERNAME --password-stdin
-                        
-                        docker push $DOCKER_USERNAME/$DOCKER_IMAGE:$DOCKER_TAG
-                    '''
+                script {
+                    docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
+                        def customImage = docker.image("${env.DOCKER_USERNAME}/${env.DOCKER_IMAGE}:${env.DOCKER_TAG}")
+                        customImage.push()
+                    }
                 }
             }
         }
 
-        stage('Deploy') {
+        stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    def containerExists = sh(script: "docker ps -a -q -f name=$DOCKER_IMAGE", returnStdout: true).trim()
-                    if (containerExists) {
-                        sh "docker stop $DOCKER_IMAGE && docker rm $DOCKER_IMAGE"
+                    // Mount kubeconfig และใช้ kubectl ผ่าน container
+                    docker.image('bitnami/kubectl:latest').inside {
+                        sh """
+                            mkdir -p /root/.kube
+                            cp ${env.KUBECONFIG} /root/.kube/config
+                            kubectl apply -f kubernetes/deployment.yaml
+                        """
                     }
-                    sh '''
-                        docker run -d --name $DOCKER_IMAGE \
-                            -p 8888:8888 \
-                            $DOCKER_USERNAME/$DOCKER_IMAGE:$DOCKER_TAG \
-                            sh -c "npm start"
-                    '''
                 }
             }
         }
 
-        
+        stage('Monitor Setup') {
+            steps {
+                script {
+                    // Deploy Prometheus และ Grafana ผ่าน Helm
+                    docker.image('bitnami/kubectl:latest').inside {
+                        sh """
+                            helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+                            helm repo update
+                            helm install prometheus-operator prometheus-community/kube-prometheus-stack --namespace monitoring --create-namespace
+                        """
+                    }
+                }
+            }
+        }
     }
-
 
     post {
 
