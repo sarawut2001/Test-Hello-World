@@ -1,0 +1,9 @@
+prometheus:
+  alertmanager:
+    enabled: true
+  pushgateway:
+    enabled: true
+grafana:
+  adminPassword: 'sarawut2001'  # เปลี่ยนเป็นรหัสผ่านที่ปลอดภัย
+  service:
+    type: NodePort
