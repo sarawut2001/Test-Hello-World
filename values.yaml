@@ -4,6 +4,6 @@ prometheus:
   pushgateway:
     enabled: true
 grafana:
-  adminPassword: 'sarawut2001'  # เปลี่ยนเป็นรหัสผ่านที่ปลอดภัย
+  adminPassword: 'sarawut2001'
   service:
     type: NodePort
