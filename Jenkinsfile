@@ -16,6 +16,15 @@ pipeline {
                 git branch: 'main', credentialsId: 'github-token', url: "${env.GITHUB_REPO}"
             }
         }
+    
+
+    stage('Build Docker Image') {
+            steps {
+                script {
+                    docker.build("${env.DOCKER_USERNAME}/${env.DOCKER_IMAGE}:${env.DOCKER_TAG}", "-f Dockerfile .")
+                }
+            }
+        }
 
         stage('Test') {
             agent {
@@ -26,14 +35,7 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
-            steps {
-                script {
-                    docker.build("${env.DOCKER_USERNAME}/${env.DOCKER_IMAGE}:${env.DOCKER_TAG}", "-f Dockerfile .")
-                }
-            }
-        }
-
+        
         stage('Push to Registry') {
             steps {
                 script {
