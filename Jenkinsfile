@@ -68,12 +68,23 @@ pipeline {
                     def grafanaPodName = ""
                     docker.image('dtzar/helm-kubectl:latest').inside('-u root') {
                         sh """
-                            helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-                            helm repo update
-                            helm install prometheus-operator prometheus-community/kube-prometheus-stack --namespace monitoring --create-namespace
+                            # ตรวจสอบว่า namespace monitoring ถูกสร้างหรือไม่
+                            kubectl get namespace monitoring || kubectl create namespace monitoring
+                            # ตรวจสอบว่า release prometheus-operator ยังคงอยู่ใน namespace monitoring หรือไม่
+                            if helm ls -n monitoring | grep -q prometheus-operator; then
+                                echo "Using existing prometheus-operator release in monitoring namespace"
+                                # อัปเดต release (ถ้าจำเป็น)
+                                helm upgrade prometheus-operator prometheus-community/kube-prometheus-stack --namespace monitoring
+                            else
+                                echo "Installing new prometheus-operator release in monitoring namespace"
+                                helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+                                helm repo update
+                                helm install prometheus-operator prometheus-community/kube-prometheus-stack --namespace monitoring --create-namespace
+                            fi
                             # หา pod name ของ Grafana
                             grafanaPodName=\$(kubectl --namespace monitoring get pod -l "app.kubernetes.io/name=grafana,app.kubernetes.io/instance=prometheus-operator" -o jsonpath="{.items[0].metadata.name}")
-                            echo "Grafana pod name: \$grafanaPodName"
+                            echo "Starting Port-Forward for Grafana pod: \$grafanaPodName"
+                            echo "Access Grafana at http://localhost:3000 during pipeline execution"
                             # ทำ Port-Forward ไปยัง localhost:3000
                             kubectl --namespace monitoring port-forward \$grafanaPodName 3000:3000 &
                         """
