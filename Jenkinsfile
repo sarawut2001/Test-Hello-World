@@ -62,22 +62,22 @@ pipeline {
             }
         }
 
-        stage('Access Grafana') {
+        stage('Run Grafana') {
             steps {
                 script {
                     def grafanaPodName = ""
-                    docker.image('dtzar/helm-kubectl:latest').inside('-u root') {
+                    docker.image('dtzar/helm-kubectl:latest').inside('-u root') {  // ใช้ image และ user ที่เหมาะสม
                         sh """
-                            # หา pod name ของ Grafana
+                            # หา pod name ของ Grafana ใน namespace monitoring
                             grafanaPodName=\$(kubectl --namespace monitoring get pod -l "app.kubernetes.io/name=grafana,app.kubernetes.io/instance=prometheus-operator" -o jsonpath="{.items[0].metadata.name}")
                             echo "Starting Port-Forward for Grafana pod: \$grafanaPodName"
+                            echo "Access Grafana at http://localhost:3000 during pipeline execution"
                             # ทำ Port-Forward ไปยัง localhost:3000
                             kubectl --namespace monitoring port-forward \$grafanaPodName 3000:3000 &
                         """
                     }
                 }
             }
-        }
     }
 
     post {
