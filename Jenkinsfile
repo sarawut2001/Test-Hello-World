@@ -63,12 +63,13 @@ pipeline {
         stage('Monitor Setup') {
             steps {
                 script {
-                    // Deploy Prometheus และ Grafana ผ่าน Helm
+            // คัดลอก values.yaml จาก repo
+                    sh 'cp kubernetes/values.yaml .'
                     docker.image('bitnami/kubectl:latest').inside {
                         sh """
                             helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
                             helm repo update
-                            helm install prometheus-operator prometheus-community/kube-prometheus-stack --namespace monitoring --create-namespace
+                            helm install prometheus-operator prometheus-community/kube-prometheus-stack --namespace monitoring --values values.yaml --create-namespace
                         """
                     }
                 }
