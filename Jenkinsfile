@@ -31,6 +31,7 @@ pipeline {
                 docker { image 'node:22' }
             }
             steps {
+                sh 'npm install mocha --save-dev'
                 sh 'npm test'
             }
         }
