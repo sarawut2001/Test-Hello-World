@@ -65,11 +65,17 @@ pipeline {
         stage('Monitor Setup') {
             steps {
                 script {
+                    def grafanaPodName = ""
                     docker.image('dtzar/helm-kubectl:latest').inside('-u root') {
                         sh """
                             helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
                             helm repo update
-                            helm upgrade prometheus-operator prometheus-community/kube-prometheus-stack --namespace monitoring --create-namespace --install
+                            helm install prometheus-operator prometheus-community/kube-prometheus-stack --namespace monitoring --create-namespace
+                            # หา pod name ของ Grafana
+                            grafanaPodName=\$(kubectl --namespace monitoring get pod -l "app.kubernetes.io/name=grafana,app.kubernetes.io/instance=prometheus-operator" -o jsonpath="{.items[0].metadata.name}")
+                            echo "Grafana pod name: \$grafanaPodName"
+                            # ทำ Port-Forward ไปยัง localhost:3000
+                            kubectl --namespace monitoring port-forward \$grafanaPodName 3000:3000 &
                         """
                     }
                 }
