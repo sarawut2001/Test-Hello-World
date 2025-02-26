@@ -65,7 +65,7 @@ pipeline {
         stage('Monitor Setup') {
             steps {
                 script {
-                    docker.image('bitnami/kubectl:latest').inside {
+                    docker.image('bitnami/kubectl:latest').inside('--entrypoint=""') {
                         sh """
                             helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
                             helm repo update
@@ -73,9 +73,9 @@ pipeline {
                         """
                     }
                 }
+
             }
         }
-    }
 
     post {
 
