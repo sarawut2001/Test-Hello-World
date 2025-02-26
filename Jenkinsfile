@@ -51,14 +51,11 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    // Mount kubeconfig และใช้ kubectl ผ่าน container
-                    docker.image('bitnami/kubectl:latest').inside {
-                        sh """
-                            mkdir -p /root/.kube
-                            cp ${env.KUBECONFIG} /root/.kube/config
-                            kubectl apply -f kubernetes/deployment.yaml
-                        """
-                    }
+                    sh """
+                docker run -v /var/jenkins_home/.kube/config:/root/.kube/config 
+                -v /var/run/docker.sock:/var/run/docker.sock 
+                bitnami/kubectl:latest kubectl apply -f kubernetes/deployment.yaml
+            """
                 }
             }
         }
