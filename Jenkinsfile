@@ -51,10 +51,10 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    docker.image('bitnami/kubectl:latest').inside {
+                    docker.image('bitnami/kubectl:latest').inside('--entrypoint="" -u 0:0') {  // รันด้วย root (uid 0, gid 0)
                         sh """
                             mkdir -p /root/.kube
-                            cp ${env.KUBECONFIG} /root/.kube/config
+                            cp /var/jenkins_home/.kube/config /root/.kube/config
                             kubectl apply -f kubernetes/deployment.yaml
                         """
                     }
@@ -62,14 +62,16 @@ pipeline {
             }
         }
 
-        stage('Deploy to Kubernetes') {
+        stage('Monitor Setup') {
             steps {
                 script {
-                    docker.image('bitnami/kubectl:latest').inside('--entrypoint="" -u 0:0') {  // รันด้วย root (uid 0, gid 0)
+            // คัดลอก values.yaml จาก repo
+                    sh 'cp kubernetes/values.yaml .'
+                    docker.image('bitnami/kubectl:latest').inside {
                         sh """
-                            mkdir -p /root/.kube
-                            cp /var/jenkins_home/.kube/config /root/.kube/config
-                            kubectl apply -f kubernetes/deployment.yaml
+                            helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+                            helm repo update
+                            helm install prometheus-operator prometheus-community/kube-prometheus-stack --namespace monitoring --values values.yaml --create-namespace
                         """
                     }
                 }
