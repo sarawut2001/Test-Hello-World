@@ -6,7 +6,6 @@ pipeline {
         DOCKER_TAG = 'latest'
         GITHUB_REPO = 'https://github.com/sarawut2001/Test-Hello-World.git'
         DOCKER_USERNAME = 'sarawut2001'
-        KUBECONFIG = '/var/jenkins_home/.kube/config'  // Config Kubernetes (ต้อง mount ใน container)
     }
 
     stages {
@@ -51,7 +50,7 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    docker.image('bitnami/kubectl:latest').inside('--entrypoint="" -u 0:0') {  // รันด้วย root (uid 0, gid 0)
+                    docker.image('bitnami/kubectl:latest').inside('--entrypoint="" -u 0:0') {  
                         sh """
                             mkdir -p /root/.kube
                             cp /var/jenkins_home/.kube/config /root/.kube/config
