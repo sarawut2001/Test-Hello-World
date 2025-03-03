@@ -17,7 +17,7 @@ prometheus:
         cpu: 100m
         memory: 128Mi
       extraArgs:
-        no-collector.logfile: true
+        - "--no-collector.logfile"
       
 grafana:
   adminPassword: 'sarawut2001'
