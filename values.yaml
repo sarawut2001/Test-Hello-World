@@ -24,3 +24,19 @@ grafana:
   service:
     type: NodePort
     nodePort: 30000
+
+serviceMonitorSelector:
+  matchLabels:
+    release: prometheus
+
+additionalServiceMonitors:
+  - name: kubernetes-service-endpoints
+    selector:
+      matchExpressions:
+        - key: k8s-app
+          operator: Exists
+    namespaceSelector:
+      any: true
+    endpoints:
+      - port: metrics
+        interval: 30s
