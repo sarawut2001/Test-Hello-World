@@ -1,19 +1,34 @@
 const express = require("express");
 const app = express();
+const client = require("prom-client");
+
+const register = new client.Registry();
+client.collectDefaultMetrics({ register });
+
+const httpRequestCounter = new client.Counter({
+    name: "http_request_total",
+    help: "Total request count",
+    labelNames: ["Method", "Path", "Status"]
+});
+
+register.registerMetric(httpRequestCounter);
 
 app.get("/", (req, res) => {
-    res.statusCode=200;
+    httpRequestCounter.inc({ method: 'GET', path: '/', status: '200' });
     res.send(`${"<h1><center style='font-size:50px;'>"}Hello World!!${"</center></h1>"}`);
 })
 
 app.get("/fail", (req, res)=>{
-    res.statusCode=500;
+    httpRequestCounter.inc({ method: 'GET', path: 'fail', status: '500' });
     res.send(`${"<h1><center style='font-size:50px; color: red;'>"}Fail Page!!${"</center></h1>"}`);
 })
 
-app.listen(8888, () =>{
-    console.log("Running on port 8888");
-    console.log("http://localhost:8888/");
-})
+app.get("/metrics", async (req, res) => {
+    res.set('Content-Type', register.contentType);
+    res.end(await register.metrics());
+});
 
-module.exports = {app};
+const port = process.env.PORT || 8888;
+app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+});

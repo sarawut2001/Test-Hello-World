@@ -53,7 +53,7 @@ pipeline {
                     // ใช้ kubectl ในโหมด dry-run เพื่อตรวจสอบการใช้งานได้ของไฟล์
                     sh '''
                         export KUBECONFIG=/var/jenkins_home/.kube/config
-                        kubectl apply -f kubernetes/deployment.yaml --validate=false
+                        kubectl apply -f kubernetes/deployment.yaml
                     '''
                 }
             }
