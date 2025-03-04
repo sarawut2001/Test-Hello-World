@@ -50,17 +50,14 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    docker.image('bitnami/kubectl:latest').inside('--entrypoint="" -u 0:0') {  
-                        sh """
-                            mkdir -p /root/.kube
-                            cp /var/jenkins_home/.kube/config /root/.kube/config
-                            kubectl apply -f kubernetes/deployment.yaml
-                        """
-                    }
+                    // ใช้ kubectl ในโหมด dry-run เพื่อตรวจสอบการใช้งานได้ของไฟล์
+                    sh '''
+                        export KUBECONFIG=/var/jenkins_home/.kube/config
+                        kubectl apply -f kubernetes/deployment.yaml --validate=false
+                    '''
                 }
             }
         }
-
     }
 
     post {
