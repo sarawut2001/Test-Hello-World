@@ -16,20 +16,19 @@ register.registerMetric(httpRequestCounter);
 app.get("/", (req, res) => {
     httpRequestCounter.inc({ method: 'GET', path: '/', status: '200' });
     res.send(`${"<h1><center style='font-size:50px;'>"}Hello World!!${"</center></h1>"}`);
-})
+});
 
-app.get("/fail", (req, res)=>{
+app.get("/fail", (req, res) => {
     httpRequestCounter.inc({ method: 'GET', path: 'fail', status: '500' });
     res.send(`${"<h1><center style='font-size:50px; color: red;'>"}Fail Page!!${"</center></h1>"}`);
-})
+});
 
 app.get("/metrics", async (req, res) => {
     res.set('Content-Type', register.contentType);
     res.end(await register.metrics());
 });
 
-
-module.exports = server;
+module.exports = app; // ส่งออก app
 
 if (require.main === module) {
     const port = process.env.PORT || 8888;
