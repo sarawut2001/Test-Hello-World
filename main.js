@@ -8,7 +8,7 @@ client.collectDefaultMetrics({ register });
 const httpRequestCounter = new client.Counter({
     name: "http_request_total",
     help: "Total request count",
-    labelNames: ["Method", "Path", "Status"]
+    labelNames: ["method", "path", "status"]
 });
 
 register.registerMetric(httpRequestCounter);
