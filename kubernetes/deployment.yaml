@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: nodejs-app
+  namespace: default
   labels:
     app: nodejs
 spec:
@@ -17,18 +18,19 @@ spec:
       containers:
       - name: nodejs
         image: sarawut2001/ci-cd-nodejs-hello-world:latest
+        imagePullPolicy: Always
+        resources:  
+          limits:
+            cpu: "200m"
+            memory: "256Mi"
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
         ports:
         - containerPort: 8888
           name: http
         - containerPort: 8889
           name: metrics
-        imagePullPolicy: Always
-        limits:
-          cpu: 200m
-          memory: 256Mi
-        requests:
-          cpu: 100m
-          memory: 128Mi
 ---
 apiVersion: v1
 kind: Service
