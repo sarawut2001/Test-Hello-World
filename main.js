@@ -28,9 +28,12 @@ app.get("/metrics", async (req, res) => {
     res.end(await register.metrics());
 });
 
-const port = process.env.PORT || 8888;
-const server = app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
-});
 
 module.exports = server;
+
+if (require.main === module) {
+    const port = process.env.PORT || 8888;
+    app.listen(port, () => {
+        console.log(`Server is running on port ${port}`);
+    });
+}
