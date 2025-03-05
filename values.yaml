@@ -17,8 +17,7 @@ prometheus:
         cpu: 100m
         memory: 128Mi
       extraArgs:
-      collector.logfiles.path: "/var/log/docker/containers"  # แก้ไขเป็น key-value
-      no-collector.textfile: true - --collector.logfiles.path=/var/log/docker/containers
+        - --collector.logfiles.path=/var/log/docker/containers
       
 grafana:
   adminPassword: 'sarawut2001'
