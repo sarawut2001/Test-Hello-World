@@ -20,7 +20,7 @@ app.get("/", (req, res) => {
 
 app.get("/fail", (req, res) => {
     httpRequestCounter.inc({ method: 'GET', path: 'fail', status: '500' });
-    res.send(`${"<h1><center style='font-size:50px; color: red;'>"}Fail Page!!${"</center></h1>"}`);
+    res.status(500)(`${"<h1><center style='font-size:50px; color: red;'>"}Fail Page!!${"</center></h1>"}`);
 });
 
 app.get("/metrics", async (req, res) => {
