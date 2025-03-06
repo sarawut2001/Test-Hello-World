@@ -17,7 +17,7 @@ prometheus:
         cpu: 100m
         memory: 128Mi
       extraArgs:
-      collector.logfiles.path: "/var/log/docker/containers"
+        no-collector.log: true
       
 grafana:
   adminPassword: 'sarawut2001'
