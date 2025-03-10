@@ -16,9 +16,8 @@ prometheus:
       requests:
         cpu: 100m
         memory: 128Mi
-      prometheus-node-exporter:
-        extraArgs:
-          no-collector.log: true
+      extraArgs:
+        no-collector.log: true
       
 grafana:
   adminPassword: 'sarawut2001'

@@ -20,7 +20,7 @@ app.get("/", (req, res) => {
 
 app.get("/fail", (req, res) => {
     httpRequestCounter.inc({ method: 'GET', path: 'fail', status: '500' });
-    res.status(500)(`${"<h1><center style='font-size:50px; color: red;'>"}Fail Page!!${"</center></h1>"}`);
+    res.send(`${"<h1><center style='font-size:50px; color: red;'>"}Fail Page!!${"</center></h1>"}`);
 });
 
 app.get("/metrics", async (req, res) => {
@@ -28,7 +28,7 @@ app.get("/metrics", async (req, res) => {
     res.end(await register.metrics());
 });
 
-module.exports = app; // ส่งออก app
+module.exports = app; 
 
 if (require.main === module) {
     const port = process.env.PORT || 8888;
