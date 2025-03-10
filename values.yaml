@@ -5,8 +5,8 @@ prometheus:
     enabled: true
   prometheus-node-exporter:
     enabled: true
-    hostNetwork: false
-    hostPID: false
+    hostNetwork: true
+    hostPID: true
     securityContext:
       runAsUser: 0
     resources:
