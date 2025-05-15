@@ -23,11 +23,6 @@ app.get("/fail", (req, res) => {
     res.status(500).send("<h1><center style='font-size:50px; color: red;'>Fail Page!!</center></h1>");
 });
 
-app.get("/metrics", async (req, res) => {
-    res.set('Content-Type', register.contentType);
-    res.end(await register.metrics());
-});
-
 module.exports = app; 
 
 if (require.main === module) {

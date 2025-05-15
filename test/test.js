@@ -1,6 +1,6 @@
 const assert = require("assert");
 const request = require("supertest");
-const app = require("../main"); // เปลี่ยนจาก const server = ...
+const app = require("../main"); 
 
 describe('Test all / request', function () {
     it('Test request to /', async function () {
